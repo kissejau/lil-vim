@@ -12,7 +12,20 @@ var (
 	NUM_INDENT  int = 3
 	CUR_ROW     int = 0
 	CUR_COL     int = SIDE_INDENT + NUM_INDENT + 1 // first row index (1)
+
+	BUFFER map[int][]byte
 )
+
+func localizeData() {
+	w, h := term.Size()
+
+	for row := 0; row < h; row++ {
+		BUFFER[row] = make([]byte, w)
+		numberingBufferRows(row)
+		for col := 0; col < w; col++ {
+		}
+	}
+}
 
 func display() {
 	var fl bool = false
@@ -20,10 +33,11 @@ mainloop:
 	for {
 		switch e := term.PollEvent(); e.Type {
 		case term.EventKey:
-			fl = keysHandler(e.Key)
+			fl = keysHandler(e)
 			if fl == true {
 				break mainloop
 			}
+			term.SetCursor(CUR_COL, CUR_ROW)
 			draw()
 		case term.EventResize:
 			draw()
@@ -37,31 +51,42 @@ func draw() {
 	w, h := term.Size()
 
 	for row := 0; row < h; row++ {
-		numbering(row)
 		for col := 0; col < w; col++ {
-
+			term.SetCell(col, row, rune(BUFFER[row][col]), term.AttrBlink, term.AttrBlink)
 		}
 	}
 	term.Flush()
 }
 
-func keysHandler(key term.Key) bool {
-	if key == term.KeyEsc {
+func keysHandler(e term.Event) bool {
+	switch e.Key {
+	case term.KeyEsc:
 		return true
-	}
 
-	if key == term.KeyArrowUp && CUR_ROW > 0 {
+	case term.KeyArrowUp:
 		recalcCursorPos(0, -1)
-	} else if key == term.KeyArrowDown {
+
+	case term.KeyArrowDown:
 		recalcCursorPos(0, 1)
-	} else if key == term.KeyArrowLeft {
+
+	case term.KeyArrowLeft:
 		recalcCursorPos(-1, 0)
-	} else if key == term.KeyArrowRight {
+
+	case term.KeyArrowRight:
 		recalcCursorPos(1, 0)
+
+	default:
+		if e.Ch != 0 {
+			printSymbol(e.Ch)
+		}
 	}
 
-	term.SetCursor(CUR_COL, CUR_ROW)
 	return false
+}
+
+func printSymbol(ch rune) {
+	term.SetCell(CUR_COL, CUR_ROW, ch, term.AttrBlink, term.AttrBlink)
+	recalcCursorPos(1, 0)
 }
 
 func recalcCursorPos(col, row int) {
@@ -83,16 +108,15 @@ func recalcCursorPos(col, row int) {
 	}
 }
 
-func numbering(rowIndex int) {
+func numberingBufferRows(rowIndex int) {
 	colIndex := 0
 	for _, e := range strconv.FormatInt(int64(rowIndex), 10) {
-		term.SetCell(colIndex+SIDE_INDENT, rowIndex, e, term.AttrBlink, term.AttrBlink)
+		BUFFER[rowIndex][colIndex+SIDE_INDENT] = byte(e)
 		colIndex++
 	}
 }
 
 func main() {
-
 	err := term.Init()
 	if err != nil {
 		panic(err)
@@ -102,6 +126,8 @@ func main() {
 	term.SetInputMode(term.InputCurrent | term.InputEsc)
 	term.SetCursor(CUR_COL, CUR_ROW)
 
+	BUFFER = make(map[int][]byte)
+	localizeData()
 	draw()
 	display()
 }
