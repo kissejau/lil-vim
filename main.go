@@ -85,7 +85,7 @@ func keysHandler(e term.Event) bool {
 }
 
 func printSymbol(ch rune) {
-	term.SetCell(CUR_COL, CUR_ROW, ch, term.AttrBlink, term.AttrBlink)
+	BUFFER[CUR_ROW][CUR_COL] = byte(ch)
 	recalcCursorPos(1, 0)
 }
 
