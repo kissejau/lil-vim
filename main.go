@@ -75,6 +75,17 @@ func keysHandler(e term.Event) bool {
 	case term.KeyArrowRight:
 		recalcCursorPos(1, 0)
 
+	case term.KeySpace:
+		rightShift()
+		printSymbol(' ')
+
+	case term.KeyBackspace:
+		leftShift()
+		recalcCursorPos(-1, 0)
+
+	// case term.KeyEnd:
+	// 	goEnd()
+
 	default:
 		if e.Ch != 0 {
 			printSymbol(e.Ch)
@@ -82,6 +93,26 @@ func keysHandler(e term.Event) bool {
 	}
 
 	return false
+}
+
+// func goEnd() {
+// 	w, _ := term.Size()
+
+// 	CUR_COL = w - 1
+// }
+
+func leftShift() {
+	var temp byte = BUFFER[CUR_ROW][len(BUFFER[CUR_ROW])-1]
+	for i := len(BUFFER[CUR_ROW]) - 2; i >= CUR_COL-1; i-- {
+		BUFFER[CUR_ROW][i], temp = temp, BUFFER[CUR_ROW][i]
+	}
+}
+
+func rightShift() {
+	var temp byte = BUFFER[CUR_ROW][CUR_COL]
+	for i := CUR_COL + 1; i < len(BUFFER[CUR_ROW]); i++ {
+		BUFFER[CUR_ROW][i], temp = temp, BUFFER[CUR_ROW][i]
+	}
 }
 
 func printSymbol(ch rune) {
@@ -98,7 +129,7 @@ func recalcCursorPos(col, row int) {
 		} else if CUR_COL+col >= w {
 			CUR_ROW++
 			CUR_COL = NUM_INDENT + SIDE_INDENT + len(strconv.FormatInt(int64(CUR_ROW), 10))
-		} else {
+		} else if CUR_COL+col >= NUM_INDENT+SIDE_INDENT+len(strconv.FormatInt(int64(CUR_ROW), 10)) {
 			CUR_COL += col
 		}
 	} else {
