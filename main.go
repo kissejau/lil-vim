@@ -75,6 +75,9 @@ func keysHandler(e term.Event) bool {
 	case term.KeyArrowRight:
 		recalcCursorPos(1, 0)
 
+	case term.KeyTab:
+		printTab()
+
 	case term.KeySpace:
 		rightShift()
 		printSymbol(' ')
@@ -115,7 +118,14 @@ func rightShift() {
 	}
 }
 
+func printTab() {
+	for i := 0; i < 4; i++ {
+		printSymbol(' ')
+	}
+}
+
 func printSymbol(ch rune) {
+	rightShift()
 	BUFFER[CUR_ROW][CUR_COL] = byte(ch)
 	recalcCursorPos(1, 0)
 }
