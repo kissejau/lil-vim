@@ -79,7 +79,6 @@ func keysHandler(e term.Event) bool {
 		printTab()
 
 	case term.KeySpace:
-		rightShift()
 		printSymbol(' ')
 
 	case term.KeyBackspace:
