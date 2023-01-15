@@ -51,7 +51,7 @@ func draw() {
 
 	for row := 0; row < h; row++ {
 		for col := 0; col < w; col++ {
-			term.SetCell(col, row, rune(BUFFER[row][col]), term.ColorGreen, term.ColorDarkGray)
+			term.SetCell(col, row, rune(BUFFER[row][col]), term.ColorBlack, term.ColorCyan)
 		}
 	}
 	term.Flush()
@@ -79,7 +79,7 @@ func keysHandler(e term.Event) bool {
 
 	case term.KeySpace:
 		printSymbol(' ')
-
+	//fix switch to last symbol of prev line when deleting first item of current line
 	case term.KeyBackspace:
 		leftShift()
 		recalcCursorPos(-1, 0)
@@ -95,7 +95,14 @@ func keysHandler(e term.Event) bool {
 
 func leftShift() {
 	var temp byte = BUFFER[CUR_ROW][len(BUFFER[CUR_ROW])-1]
-	for i := len(BUFFER[CUR_ROW]) - 2; i >= CUR_COL-1; i-- {
+	var ll int = CUR_COL
+	if ll != 0 {
+		ll--
+	}
+	if CUR_COL == len(BUFFER[CUR_ROW])-1 {
+		temp = 0
+	}
+	for i := len(BUFFER[CUR_ROW]) - 1; i >= ll; i-- {
 		BUFFER[CUR_ROW][i], temp = temp, BUFFER[CUR_ROW][i]
 	}
 }
